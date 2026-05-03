@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    @apply bg-background;
+  }
+
+  body {
+    @apply bg-background text-on-background font-body antialiased;
+    min-height: 100vh;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@layer components {
+  .dashboard-shell {
+    @apply min-h-screen bg-background text-on-background;
+  }
+
+  .dashboard-header {
+    background: #3f475a;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .dashboard-surface {
+    @apply bg-surface border border-outline/70 rounded-3xl shadow-card;
+  }
+
+  .dashboard-panel {
+    @apply bg-surface border border-outline/70 rounded-2xl shadow-card;
+  }
+
+  .dashboard-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    border: 1px solid #d0d5dd;
+    background: #ffffff;
+    padding: 0.5rem 1rem;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #667085;
+  }
+
+  .dashboard-pill-active {
+    @apply bg-primary text-on-primary border-primary;
+  }
+
+  .dashboard-stat {
+    background: #ffffff;
+    border: 1px solid rgba(208, 213, 221, 0.7);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    padding: 1.5rem;
+  }
+
+  .dashboard-section-title {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #667085;
+  }
+
+  .dashboard-title {
+    font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #101828;
+  }
+
+  .dashboard-subtitle {
+    font-size: 15px;
+    line-height: 1.5rem;
+    color: #667085;
+  }
+
+  .dashboard-table th {
+    background: #f3f6fb;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #8892a6;
+  }
+
+  .dashboard-table td {
+    @apply border-t border-outline/70;
+  }
+
+  .dashboard-soft-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .dashboard-badge-critical {
+    @apply bg-error-container text-error;
+  }
+
+  .dashboard-badge-high {
+    @apply bg-tertiary-container text-tertiary;
+  }
+
+  .dashboard-badge-muted {
+    @apply bg-surface-container-high text-on-surface-variant;
+  }
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
