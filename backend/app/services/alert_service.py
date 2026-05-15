@@ -3,9 +3,9 @@ from app.models.drug import DrugStatistics
 from app.models.alert import Alert
 
 THRESHOLDS = {
-    "critical": 80,
-    "high": 60,
-    "medium": 40,
+    "critical": 70,
+    "high": 55,
+    "medium": 30,
 }
 
 def get_level(score: float) -> str | None:
@@ -65,6 +65,15 @@ def send_alert(alert_id: int, db: Session):
     if not alert:
         return None
     alert.is_sent = True
+    db.commit()
+    db.refresh(alert)
+    return alert
+
+def monitor_alert(alert_id: int, db: Session):
+    alert = db.query(Alert).filter(Alert.id == alert_id).first()
+    if not alert:
+        return None
+    alert.is_monitored = True
     db.commit()
     db.refresh(alert)
     return alert

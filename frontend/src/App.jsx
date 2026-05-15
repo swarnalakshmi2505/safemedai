@@ -15,6 +15,7 @@ import ReportsPage from './pages/ReportsPage.jsx';
 import ReportPreviewPage from './pages/ReportPreviewPage.jsx';
 import SentimentPage from './pages/SentimentPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
+import DoctorVerificationPage from './pages/DoctorVerificationPage.jsx';
 
 // Doctor Pages
 import DoctorDashboard from './pages/doctor/DoctorDashboard.jsx';
@@ -50,6 +51,7 @@ export default function App() {
                 <Route path="reports" element={<ReportsPage />} />
                 <Route path="report/:drugName" element={<ReportPreviewPage />} />
                 <Route path="chatbot" element={<ChatbotPage />} />
+                <Route path="verification" element={<DoctorVerificationPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="*" element={<Navigate to="dashboard" replace />} />
               </Routes>

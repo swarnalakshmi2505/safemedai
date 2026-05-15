@@ -107,3 +107,30 @@ def update_profile(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.patch("/request-verification", response_model=UserOut)
+def request_verification(
+    license_number: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_doctor)
+):
+    # Self-verification logic: If input matches registration license, authorize immediately
+    if current_user.license_number and current_user.license_number.strip() == license_number.strip():
+        current_user.is_verified = True
+        db.commit()
+        db.refresh(current_user)
+        return current_user
+    
+    # If no license was stored or it doesn't match, update it but don't verify yet
+    # Or as per user request, strictly match for verification
+    if not current_user.license_number:
+        current_user.license_number = license_number
+        db.commit()
+        db.refresh(current_user)
+        return current_user
+        
+    raise HTTPException(
+        status_code=400, 
+        detail="Verification ID mismatch. Profile remains unverified."
+    )

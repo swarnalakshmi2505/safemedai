@@ -10,22 +10,39 @@ import {
   ShieldCheck,
   Zap,
   Eye,
-  Cpu
+  Cpu,
+  Send,
+  AlertTriangle,
+  Layers,
+  BarChart3,
+  Stethoscope,
+  TrendingUp,
+  FileText,
+  Clock,
+  User,
+  ExternalLink
 } from 'lucide-react'
 import Layout from '../components/Layout'
-import api from '../services/api'
+import { alertsAPI, doctorAPI } from '../services/api'
+import toast from 'react-hot-toast'
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState([])
+  const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
 
-  const fetchAlerts = async () => {
+  const fetchData = async () => {
     try {
-      const res = await api.get('/alerts')
-      setAlerts(res.data)
+      const [alertsRes, reportsRes] = await Promise.all([
+        alertsAPI.getAlerts(),
+        doctorAPI.getAllReports()
+      ])
+      setAlerts(alertsRes.data)
+      setReports(reportsRes.data)
     } catch (err) {
-      console.error("Error fetching alerts:", err)
+      console.error("Error fetching intelligence data:", err)
+      toast.error("Failed to synchronize with clinical grid.")
     } finally {
       setLoading(false)
     }
@@ -33,193 +50,317 @@ export default function AlertsPage() {
 
   const generateAlerts = async () => {
     setGenerating(true)
+    const toastId = toast.loading("Scanning clinical clusters for risk anomalies...")
     try {
-      await api.post('/alerts/generate')
-      await fetchAlerts()
+      const res = await alertsAPI.generateAlerts()
+      toast.success(`${res.data.alerts_created} new risk signals detected.`, { id: toastId })
+      await fetchData()
     } catch (err) {
       console.error("Error generating alerts:", err)
+      toast.error("Scanning node failure.", { id: toastId })
     } finally {
       setGenerating(false)
     }
   }
 
-  const markReviewed = async (id) => {
+  const validateAlert = async (id) => {
     try {
-      await api.patch(`/alerts/${id}/review`)
-      setAlerts(prev =>
-        prev.map(a => a.id === id ? { ...a, is_reviewed: true } : a)
-      )
+      await alertsAPI.validateAlert(id)
+      toast.success("Signal validated.")
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, is_reviewed: true } : a))
     } catch (err) {
-      console.error("Error marking alert as reviewed:", err)
+      toast.error("Validation failed.")
     }
   }
 
-  useEffect(() => { fetchAlerts() }, [])
+  const publishAlert = async (id) => {
+    try {
+      await alertsAPI.sendAlert(id)
+      toast.success("Alert published to Doctor Dashboard.")
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, is_sent: true } : a))
+    } catch (err) {
+      toast.error("Publish failed.")
+    }
+  }
 
-  const unreviewed = alerts.filter(a => !a.is_reviewed)
-  const reviewed   = alerts.filter(a => a.is_reviewed)
+  const monitorAlert = async (id) => {
+    try {
+      await alertsAPI.monitorAlert(id)
+      toast.success("Alert marked for active monitoring.")
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, is_monitored: true } : a))
+    } catch (err) {
+      toast.error("Monitor failed.")
+    }
+  }
 
-  const levelColor = (level) =>
-    ({
-      critical: 'text-brand-red',
-      high: 'text-brand-amber',
-      medium: 'text-brand-blue',
-    }[level] || 'text-surface-500');
+  const reviewReport = async (id) => {
+    try {
+      await doctorAPI.reviewReport(id)
+      toast.success("Clinical report verified and published to Doctor Intelligence Hub.")
+      await fetchData() // Sync new alert created in backend
+    } catch (err) {
+      toast.error("Review failed.")
+    }
+  }
 
-  const levelBg = (level) =>
-    ({
-      critical: 'bg-brand-red/10 border-brand-red/20',
-      high: 'bg-brand-amber/10 border-brand-amber/20',
-      medium: 'bg-brand-blue/10 border-brand-blue/20',
-    }[level] || 'bg-white/5 border-white/10');
+  useEffect(() => { fetchData() }, [])
+
+  const mostDangerous = alerts.length > 0 ? [...alerts].sort((a, b) => b.risk_score - a.risk_score)[0] : null;
+
+  if (loading) {
+    return (
+      <Layout title="Clinical Intelligence">
+        <div className="flex h-[70vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-6">
+            <div className="w-16 h-16 border-4 border-brand-blue/10 border-t-brand-blue rounded-full animate-spin" />
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Synchronizing Intelligence Nodes...</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
 
   return (
-    <Layout title="Signal Command Center">
-      <div className="max-w-6xl mx-auto space-y-10 pb-20 animate-safemed-fadein">
-
-        {/* Header Area */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8">
+    <Layout title="Signal & Report Command">
+      <div className="max-w-[1600px] mx-auto space-y-10 pb-20 animate-safemed-fadein px-4">
+        
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 border-b border-black/5 dark:border-white/5 pb-10">
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-brand-red/10 border border-brand-red/20 rounded-2xl flex items-center justify-center shadow-glow-red/10">
-              <ShieldAlert className="w-8 h-8 text-brand-red animate-pulse" />
+            <div className="w-20 h-20 bg-brand-red/10 border border-brand-red/20 rounded-[2rem] flex items-center justify-center shadow-glow-red/10">
+              <ShieldAlert className="w-10 h-10 text-brand-red" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight">Signal <span className="text-brand-red">Command</span> Center</h1>
-              <p className="text-[11px] text-surface-500 font-bold uppercase tracking-[0.2em] mt-3">
-                {unreviewed.length} Priority Clinical Signals Pending Surveillance Review
+              <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
+                Intelligence <span className="text-brand-red">Command</span> Center
+              </h1>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.3em] mt-4 flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-brand-blue" />
+                Dual-Stream Monitoring Active
               </p>
             </div>
           </div>
           <button
             onClick={generateAlerts}
             disabled={generating}
-            className="btn-premium px-8 py-4 flex items-center gap-3 disabled:opacity-50 active:scale-95 transition-all"
+            className="btn-premium px-10 py-5 flex items-center gap-3 disabled:opacity-50 group"
           >
-            {generating ? <RefreshCcw className="w-4 h-4 animate-spin" /> : <Activity className="w-4 h-4" />}
-            <span className="uppercase tracking-[0.15em] text-xs font-bold">
-              {generating ? 'Scanning Clinical Clusters...' : 'Initialize Signal Scan'}
+            {generating ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <Activity className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+            <span className="uppercase tracking-widest text-[11px] font-black">
+              {generating ? 'Scanning Clinical Clusters...' : 'Initialize Grid Scan'}
             </span>
           </button>
         </div>
 
-        {loading && (
-          <div className="flex flex-col items-center justify-center py-40 gap-6">
-            <RefreshCcw className="w-12 h-12 text-brand-blue animate-spin opacity-40" />
-            <p className="text-[10px] font-bold text-surface-500 uppercase tracking-[0.3em]">Synching with Global Database Node...</p>
-          </div>
-        )}
-
-        {/* Unreviewed Signals */}
-        {unreviewed.length > 0 && (
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          
+          {/* COLUMN 1: ALERTS */}
+          <div className="space-y-8">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-xs font-bold text-surface-500 uppercase tracking-[0.2em]">Active Threat Vectors</h2>
-              <span className="text-[10px] font-bold text-brand-red animate-pulse">LIVE SURVEILLANCE ACTIVE</span>
+              <div className="flex items-center gap-3">
+                <Bell className="w-5 h-5 text-brand-red" />
+                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Priority Safety Alerts</h2>
+              </div>
+              <span className="text-[10px] font-black text-brand-red bg-brand-red/10 px-3 py-1 rounded-full uppercase tracking-widest border border-brand-red/20">
+                AI Generated Signals
+              </span>
             </div>
+
+            {/* Most Dangerous Drug Highlight */}
+            {mostDangerous && (
+              <div className="clinical-card border-l-[12px] border-brand-red bg-brand-red/[0.03] p-8 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4">
+                  <span className="px-3 py-1 bg-brand-red text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-bl-xl rounded-tr-xl">High Hazard Node</span>
+                </div>
+                <div className="flex items-start gap-6">
+                  <div className="w-20 h-20 rounded-[1.5rem] bg-brand-red text-white flex items-center justify-center shadow-glow-red/20 animate-pulse-slow">
+                    <AlertTriangle className="w-10 h-10" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-2">
+                      <h3 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">{mostDangerous.drug_name}</h3>
+                      <div className="flex items-center gap-1 text-brand-red">
+                        <TrendingUp className="w-4 h-4" />
+                        <span className="text-lg font-black">{mostDangerous.risk_score}</span>
+                      </div>
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm font-bold italic mb-6">"{mostDangerous.message}"</p>
+                    
+                    {/* Risk Meter */}
+                    <div className="mb-8 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Signal Toxicity Index</span>
+                        <span className="text-[10px] font-black text-brand-red">{mostDangerous.risk_score}% Potential Hazard</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-brand-red shadow-glow-red/20 transition-all duration-1000" 
+                          style={{ width: `${mostDangerous.risk_score}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4">
+                      {!mostDangerous.is_sent && (
+                        <button 
+                          onClick={() => publishAlert(mostDangerous.id)}
+                          className="px-6 py-3 bg-brand-red text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-brand-red/90 transition-all flex items-center gap-2 shadow-glow-red/10"
+                        >
+                          <Send className="w-4 h-4" />
+                          Publish Alert
+                        </button>
+                      )}
+                      {!mostDangerous.is_monitored && (
+                        <button 
+                          onClick={() => monitorAlert(mostDangerous.id)}
+                          className="px-6 py-3 bg-slate-800 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-900 transition-all flex items-center gap-2"
+                        >
+                          <Activity className="w-4 h-4" />
+                          Monitor Alert
+                        </button>
+                      )}
+                      {mostDangerous.is_sent && (
+                        <span className="px-6 py-3 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" /> Published
+                        </span>
+                      )}
+                      {mostDangerous.is_monitored && (
+                        <span className="px-6 py-3 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2">
+                          <Activity className="w-4 h-4" /> Monitoring
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-4">
-              {unreviewed.map(alert => (
-                <div
-                  key={alert.id}
-                  className={`clinical-card border-l-4 group animate-safemed-slidein ${
-                    alert.level === 'critical' ? 'border-brand-red' : alert.level === 'high' ? 'border-brand-amber' : 'border-brand-blue'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-8">
-                    <div className="flex items-start gap-6 flex-1">
-                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl shadow-premium border ${levelBg(alert.level)} ${levelColor(alert.level)}`}>
-                        {alert.level === 'critical' ? <ShieldAlert className="w-8 h-8" /> : alert.level === 'high' ? <Activity className="w-8 h-8" /> : <Zap className="w-8 h-8" />}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-3">
-                          <span className="text-xl font-bold text-white capitalize group-hover:text-brand-cyan transition-colors">
-                            {alert.drug_name}
-                          </span>
-                          <span className={`text-[9px] font-black px-2.5 py-1 rounded border uppercase tracking-widest ${levelBg(alert.level)} ${levelColor(alert.level)}`}>
-                            {alert.level} Signal
-                          </span>
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
-                            <span className="text-[9px] font-bold text-surface-500 uppercase">ROR:</span>
-                            <span className="text-[10px] font-mono text-brand-cyan font-bold">{alert.risk_score}</span>
-                          </div>
-                        </div>
-                        <p className="text-white/70 text-sm font-medium leading-relaxed max-w-3xl italic">"{alert.message}"</p>
-                        <div className="flex items-center gap-6 mt-4">
-                          <div className="flex items-center gap-2">
-                            <Terminal className="w-3 h-3 text-surface-500" />
-                            <span className="text-[10px] font-bold text-surface-500 uppercase tracking-tighter">
-                              {new Date(alert.created_at).toLocaleString()}
-                            </span>
-                          </div>
-                          <div className="w-1.5 h-1.5 rounded-full bg-white/5" />
-                          <span className="text-[10px] font-bold text-surface-500 uppercase tracking-tighter">NODE ID: PV-{alert.id.toString().slice(-6)}</span>
-                        </div>
-                      </div>
+              {alerts.filter(a => a.id !== mostDangerous?.id).slice(0, 10).map(alert => (
+                <div key={alert.id} className="clinical-card group hover:border-brand-blue/30 transition-all p-6 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      alert.level === 'critical' ? 'bg-brand-red/10 text-brand-red' : 
+                      alert.level === 'high' ? 'bg-brand-amber/10 text-brand-amber' : 'bg-brand-blue/10 text-brand-blue'
+                    }`}>
+                      {alert.level === 'critical' ? <AlertTriangle className="w-6 h-6" /> : <Activity className="w-6 h-6" />}
                     </div>
-                    <button
-                      onClick={() => markReviewed(alert.id)}
-                      className="flex-shrink-0 bg-white/5 border border-white/10 text-surface-400 hover:bg-brand-emerald/10 hover:border-brand-emerald/30 hover:text-brand-emerald px-6 py-3 rounded-xl transition-all font-bold text-[10px] uppercase tracking-widest"
-                    >
-                      <CheckCircle className="w-4 h-4 inline mr-2" />
-                      Clear Signal
-                    </button>
+                    <div>
+                      <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-tight">{alert.drug_name}</h4>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Risk Score: {alert.risk_score} · {alert.level}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {!alert.is_sent && (
+                      <button 
+                        onClick={() => publishAlert(alert.id)}
+                        className="p-2 hover:bg-brand-red/10 text-slate-400 hover:text-brand-red rounded-lg transition-colors"
+                        title="Publish Alert"
+                      >
+                        <Send className="w-5 h-5" />
+                      </button>
+                    )}
+                    {!alert.is_monitored && (
+                      <button 
+                        onClick={() => monitorAlert(alert.id)}
+                        className="p-2 hover:bg-brand-blue/10 text-slate-400 hover:text-brand-blue rounded-lg transition-colors"
+                        title="Monitor Alert"
+                      >
+                        <Activity className="w-5 h-5" />
+                      </button>
+                    )}
+                    {alert.is_sent && <Send className="w-5 h-5 text-emerald-500" />}
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        )}
 
-        {/* Reviewed History */}
-        {reviewed.length > 0 && (
-          <div className="space-y-6 pt-10 border-t border-white/[0.05]">
+          {/* COLUMN 2: DOCTOR REPORTS */}
+          <div className="space-y-8">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-xs font-bold text-surface-500 uppercase tracking-[0.2em]">Validated History</h2>
-              <span className="text-[10px] font-bold text-surface-500 uppercase">ARCHIVED NODES</span>
+              <div className="flex items-center gap-3">
+                <Stethoscope className="w-5 h-5 text-brand-blue" />
+                <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Doctor Intelligence Reports</h2>
+              </div>
+              <span className="text-[10px] font-black text-brand-blue bg-brand-blue/10 px-3 py-1 rounded-full uppercase tracking-widest border border-brand-blue/20">
+                Manual Submissions
+              </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-60">
-              {reviewed.map(alert => (
-                <div
-                  key={alert.id}
-                  className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-5 flex items-center gap-4 group hover:bg-white/[0.04] transition-all"
-                >
-                  <div className="p-2 bg-brand-emerald/10 border border-brand-emerald/20 rounded-lg text-brand-emerald">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-bold text-white capitalize block truncate group-hover:text-brand-emerald transition-colors">
-                      {alert.drug_name}
-                    </span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-[8px] font-bold uppercase tracking-widest ${levelColor(alert.level)}`}>
-                        {alert.level}
-                      </span>
-                      <div className="w-1 h-1 rounded-full bg-white/5" />
-                      <span className="text-[8px] font-bold text-surface-500 uppercase tracking-tighter">
-                        Archived: {new Date(alert.updated_at || alert.created_at).toLocaleDateString()}
+
+            {reports.length > 0 ? (
+              <div className="space-y-6">
+                {reports.slice(0, 8).map(report => (
+                  <div key={report.id} className="clinical-card p-6 group hover:border-brand-emerald/30 transition-all">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <span className="text-[9px] font-black text-brand-blue uppercase tracking-widest mb-1 block">{report.report_id}</span>
+                        <h4 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">{report.drug_name}</h4>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
+                        report.status === 'reviewed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-brand-amber/10 text-brand-amber'
+                      }`}>
+                        {report.status}
                       </span>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                    
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <User className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-tight">Reported by: Dr. {report.doctor_name || 'Anonymous'}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-slate-500">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-tight">{new Date(report.created_at).toLocaleString()}</span>
+                      </div>
+                    </div>
 
-        {!loading && alerts.length === 0 && (
-          <div className="text-center py-40 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl animate-safemed-fadein">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 font-bold italic line-clamp-2 mb-6 border-l-2 border-black/5 dark:border-white/5 pl-4">
+                      "{report.symptoms}"
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className={`text-[9px] font-black px-2 py-1 rounded uppercase border ${
+                          report.severity?.toLowerCase() === 'life-threatening' ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-slate-100 dark:bg-white/5 text-slate-500 border-black/5'
+                        }`}>
+                          {report.severity}
+                        </span>
+                      </div>
+                      {report.status !== 'reviewed' ? (
+                        <button 
+                          onClick={() => reviewReport(report.report_id)}
+                          className="text-[10px] font-black text-brand-emerald uppercase tracking-widest flex items-center gap-1 hover:underline bg-brand-emerald/5 px-3 py-1.5 rounded-lg border border-brand-emerald/10 transition-all"
+                        >
+                          Verify & Publish to Dashboard <CheckCircle className="w-3 h-3" />
+                        </button>
+                      ) : (
+                        <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1">
+                          Verified <CheckCircle className="w-3 h-3" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-slate-50 dark:bg-white/[0.02] border border-dashed border-black/10 dark:border-white/10 rounded-[2rem] p-20 text-center">
+                 <FileText className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                 <p className="text-slate-500 text-xs font-black uppercase tracking-widest">No doctor reports submitted in current cycle.</p>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {!loading && alerts.length === 0 && reports.length === 0 && (
+          <div className="text-center py-40 bg-slate-50 dark:bg-white/[0.01] border border-dashed border-black/10 dark:border-white/10 rounded-[3rem]">
             <div className="w-24 h-24 mx-auto mb-8 bg-brand-blue/5 border border-brand-blue/10 rounded-full flex items-center justify-center relative">
               <Eye className="w-10 h-10 text-brand-blue opacity-30" />
               <div className="absolute inset-0 rounded-full border-2 border-brand-blue/10 border-t-brand-blue/40 animate-spin-slow" />
             </div>
-            <h3 className="text-2xl font-bold text-white tracking-tight">Clinical Harmony Achieved</h3>
-            <p className="text-surface-500 text-sm mt-3 max-w-md mx-auto">No active safety threats or anomalous signals detected across clinical compound clusters.</p>
-            <button
-              onClick={generateAlerts}
-              className="mt-10 btn-premium px-10 py-4 group"
-            >
-              <RefreshCcw className="w-4 h-4 mr-3 group-hover:rotate-180 transition-transform duration-500" />
-              <span className="uppercase tracking-[0.2em] text-xs font-bold">Initiate Deep System Re-Scan</span>
-            </button>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Clinical Harmony Maintained</h3>
+            <p className="text-slate-500 text-sm mt-3 max-w-md mx-auto font-bold italic">No active safety threats or anomalous signals detected across the surveillance grid.</p>
           </div>
         )}
       </div>

@@ -17,6 +17,20 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('token');
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login?expired=true';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const analyticsAPI = {
   getLeaderboard: () => api.get('/analytics/leaderboard'),
   getRiskProfile: (drugName) => api.get(`/analytics/risk-profile/${encodeURIComponent(drugName)}`),
@@ -41,14 +55,17 @@ export const alertsAPI = {
   generateAlerts: () => api.post('/alerts/generate'),
   validateAlert: (id) => api.patch(`/alerts/${id}/validate`),
   sendAlert: (id) => api.patch(`/alerts/${id}/send`),
+  monitorAlert: (id) => api.patch(`/alerts/${id}/monitor`),
 };
 
 export const authAPI = {
   login: (payload) => api.post('/auth/login', payload),
   register: (payload) => api.post('/auth/register', payload),
   getMe: () => api.get('/auth/me'),
+  updateProfile: (fullName) => api.patch(`/auth/profile?full_name=${encodeURIComponent(fullName)}`),
   getUnverifiedDoctors: () => api.get('/auth/unverified-doctors'),
   verifyDoctor: (id) => api.patch(`/auth/verify-doctor/${id}`),
+  requestVerification: (licenseNumber) => api.patch(`/auth/request-verification?license_number=${encodeURIComponent(licenseNumber)}`),
 };
 
 export const getHealth = () => api.get('/health');

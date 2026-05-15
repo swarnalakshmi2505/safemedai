@@ -1,58 +1,84 @@
 import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Send, Bot, User, Loader2, Pill } from 'lucide-react'
+import { 
+  Send, 
+  Bot, 
+  User, 
+  Loader2, 
+  Pill, 
+  Sparkles, 
+  BrainCircuit, 
+  Terminal,
+  Activity,
+  History,
+  Info
+} from 'lucide-react'
 import Layout from '../components/Layout'
 import { advancedAPI } from '../services/api'
+import toast from 'react-hot-toast'
 
 const SUGGESTED = [
-  "What is ROR and how is it used in pharmacovigilance?",
-  "What are the most dangerous side effects of warfarin?",
-  "Explain the difference between serious and non-serious adverse events",
-  "How does the FDA FAERS reporting system work?",
-  "What risk score indicates a drug needs an alert?",
+  "How is ROR calculated in signal detection?",
+  "Analyze current FAERS signals for Warfarin",
+  "Explain disproportionality in clinical reports",
+  "What criteria defines a 'Serious' adverse event?",
+  "Show signal momentum for recent FDA alerts",
 ]
 
 function MessageBubble({ msg }) {
   const isUser = msg.role === 'user'
+  
   return (
-    <div className={`flex gap-3 animate-safemed-fadein ${isUser ? 'flex-row-reverse' : ''}`}>
-      {/* Avatar */}
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center
-                       flex-shrink-0 mt-1 shadow-soft
-                       ${isUser ? 'bg-medical-500' : 'bg-medical-100 border border-medical-200'}`}>
-        {isUser
-          ? <User className="w-5 h-5 text-white" />
-          : <Bot  className="w-5 h-5 text-medical-600" />
-        }
+    <div className={`flex gap-4 animate-safemed-fadein ${isUser ? 'flex-row-reverse' : ''}`}>
+      {/* Dynamic Avatar Node */}
+      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-1 shadow-lg border transition-transform hover:scale-110
+                       ${isUser 
+                          ? 'bg-brand-blue border-brand-blue/30 text-white' 
+                          : 'bg-white dark:bg-brand-navy border-black/5 dark:border-white/10 text-brand-blue dark:text-brand-cyan'}`}>
+        {isUser ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
       </div>
 
-      {/* Bubble */}
-      <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed shadow-card
+      {/* Neural Logic Bubble */}
+      <div className={`max-w-[85%] rounded-[1.5rem] px-6 py-4 shadow-xl border relative transition-all
                        ${isUser
-                         ? 'bg-gradient-to-br from-medical-500 to-medical-600 text-white rounded-tr-sm'
-                         : 'bg-white border border-medical-100 text-slate-700 rounded-tl-sm'
+                         ? 'bg-brand-blue text-white border-brand-blue/20 rounded-tr-sm'
+                         : 'bg-white dark:bg-white/[0.03] border-black/5 dark:border-white/10 text-slate-800 dark:text-slate-100 rounded-tl-sm'
                        }`}>
-        {/* Render with basic markdown-like formatting */}
-        {msg.content.split('\n').map((line, i) => {
-          if (line.startsWith('**') && line.endsWith('**')) {
-            return <p key={i} className="font-extrabold mt-1">{line.slice(2, -2)}</p>
-          }
-          if (line.startsWith('- ') || line.startsWith('• ')) {
-            return (
-              <p key={i} className="flex gap-2 mt-1.5 font-medium">
-                <span className="text-medical-500 flex-shrink-0">•</span>
-                <span>{line.slice(2)}</span>
-              </p>
-            )
-          }
-          if (line.trim() === '') return <br key={i} />
-          return <p key={i} className={i > 0 ? 'mt-1.5' : ''}>{line}</p>
-        })}
+        
+        {/* Content Node */}
+        <div className="space-y-2 text-[13px] leading-relaxed font-medium">
+          {msg.content.split('\n').map((line, i) => {
+            // Header Logic
+            if (line.startsWith('### ')) {
+                return <h3 key={i} className="text-sm font-black uppercase tracking-widest mt-4 mb-2 text-brand-blue dark:text-brand-cyan">{line.replace('### ', '')}</h3>
+            }
+            // Bold Logic
+            if (line.includes('**')) {
+                const parts = line.split('**');
+                return (
+                  <p key={i} className={i > 0 ? 'mt-1.5' : ''}>
+                    {parts.map((part, index) => index % 2 === 1 ? <b key={index} className="font-black text-brand-blue dark:text-brand-cyan">{part}</b> : part)}
+                  </p>
+                )
+            }
+            // Bullet Logic
+            if (line.startsWith('- ') || line.startsWith('• ')) {
+              return (
+                <div key={i} className="flex gap-3 mt-2 pl-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-blue dark:bg-brand-cyan mt-1.5 flex-shrink-0" />
+                  <p className="font-semibold italic">{line.slice(2)}</p>
+                </div>
+              )
+            }
+            if (line.trim() === '') return <div key={i} className="h-2" />
+            return <p key={i} className={i > 0 ? 'mt-1.5' : ''}>{line}</p>
+          })}
+        </div>
 
         {msg.isLoading && (
-          <div className="flex items-center gap-2 mt-2">
-            <Loader2 className="w-3 h-3 animate-spin text-medical-500" />
-            <span className="text-medical-600 font-bold text-[10px] uppercase tracking-widest">Thinking...</span>
+          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-black/5 dark:border-white/10">
+            <Loader2 className="w-4 h-4 animate-spin text-brand-blue dark:text-brand-cyan" />
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-blue dark:text-brand-cyan animate-pulse">Synchronizing Neural Logic...</span>
           </div>
         )}
       </div>
@@ -68,8 +94,8 @@ export default function ChatbotPage() {
     {
       role: 'assistant',
       content: drugContext
-        ? `Hello! I'm your SafeMedAI assistant. I'm focusing my analysis on **${drugContext}**. I'll reference FAERS data and ROR signals for this specific compound. What would you like to know?`
-        : "Hello! I'm your SafeMedAI pharmacovigilance assistant. I can help you understand drug safety signals, ROR scores, adverse reactions, and clinical evidence. What's on your mind?",
+        ? `### PV ANALYST INITIALIZED\nI have established a contextual link with **${drugContext}**. I am now correlating FAERS signal vectors and ROR disproportionality data for this compound. How should we proceed with the safety audit?`
+        : "### ANALYST STANDBY\nWelcome to the SafeMedAI Neural Intelligence Node. I am calibrated to assist with pharmacovigilance data interpretation, signal detection queries (ROR/FAERS), and clinical safety evidence synthesis. Provide a compound signature or query to begin analysis.",
     }
   ])
   const [input,     setInput]     = useState('')
@@ -106,12 +132,12 @@ export default function ChatbotPage() {
         { role: 'assistant', content: res.data.reply }
       ])
     } catch (err) {
+      toast.error("Neural Node Connection Failure")
       setMessages(prev => [
         ...prev.slice(0, -1),
         {
           role: 'assistant',
-          content: err.response?.data?.detail ||
-            'I encountered a connection error. Please ensure the backend is running and the GOOGLE_API_KEY is configured.'
+          content: "### SYSTEM OVERLOAD\nI have encountered an anomaly in the neural link. Please verify backend synchronization and clinical node integrity. (GOOGLE_API_KEY validation may be required)."
         }
       ])
     } finally {
@@ -121,84 +147,114 @@ export default function ChatbotPage() {
   }
 
   return (
-    <Layout title="SafeMedAI Assistant">
-      <div className="max-w-4xl mx-auto flex flex-col h-[calc(100vh-12rem)]">
+    <Layout title="AI Clinical Intelligence Agent">
+      <div className="max-w-5xl mx-auto flex flex-col h-[calc(100vh-14rem)] animate-safemed-fadein">
 
-        {/* Status Header */}
-        <div className="flex items-center gap-4 mb-6 animate-safemed-slidein">
-          <div className="w-12 h-12 bg-white border border-medical-100 rounded-2xl flex items-center justify-center shadow-soft">
-            <Bot className="w-6 h-6 text-medical-600" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-base font-extrabold text-slate-900 tracking-tight">Signal Analysis Engine</h2>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-medical-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-medical-500"></span>
-              </span>
-              <p className="text-medical-600 font-bold text-[10px] uppercase tracking-widest">
-                Gemini 2.0 Flash Active
-              </p>
+        {/* Intelligence Link Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-black/5 dark:border-white/10 pb-8">
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-brand-blue/10 border border-brand-blue/20 rounded-[1.5rem] flex items-center justify-center shadow-glow-blue/10">
+              <BrainCircuit className="w-8 h-8 text-brand-blue" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
+                Neural <span className="text-brand-blue">PV Analyst</span> Node
+              </h1>
+              <div className="flex items-center gap-3 mt-3">
+                 <div className="status-dot text-brand-emerald" />
+                 <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Quantum Engine: Gemini 2.0 Flash</span>
+              </div>
             </div>
           </div>
+          
           {drugContext && (
-            <div className="bg-medical-50 border border-medical-200 rounded-xl px-4 py-2 flex items-center gap-2 shadow-soft">
-              <Pill className="w-3 h-3 text-medical-500" />
-              <span className="text-medical-700 text-xs font-bold capitalize">{drugContext}</span>
+            <div className="flex items-center gap-4 bg-brand-blue/10 border border-brand-blue/20 rounded-2xl px-6 py-3 shadow-lg group">
+              <Pill className="w-5 h-5 text-brand-blue group-hover:rotate-12 transition-transform" />
+              <div className="flex flex-col">
+                 <span className="text-[8px] font-black text-brand-blue uppercase tracking-widest">Active Focus Context</span>
+                 <span className="text-xs font-black text-slate-900 dark:text-white capitalize">{drugContext}</span>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto space-y-6 pr-4 mb-4 scroll-smooth">
+        {/* Surveillance Feed (Messages) */}
+        <div className="flex-1 overflow-y-auto space-y-8 pr-6 mb-8 custom-scrollbar">
           {messages.map((msg, i) => (
             <MessageBubble key={i} msg={msg} />
           ))}
           <div ref={bottomRef} />
         </div>
 
-        {/* Input & Suggestions */}
-        <div className="bg-white border border-medical-100 rounded-2xl p-4 shadow-soft">
-          {messages.length === 1 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+        {/* Command Interface */}
+        <div className="bg-white dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-[2.5rem] p-6 shadow-2xl backdrop-blur-xl">
+          
+          {/* Intelligence Probes (Suggested Chips) */}
+          <div className="flex items-center gap-4 mb-6 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center gap-2 flex-shrink-0 text-slate-400">
+               <Sparkles className="w-3.5 h-3.5" />
+               <span className="text-[9px] font-black uppercase tracking-widest">Suggested Probes:</span>
+            </div>
+            <div className="flex gap-3">
               {SUGGESTED.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => sendMessage(q)}
-                  className="text-[11px] font-bold bg-medical-50 border border-medical-100
-                             hover:border-medical-400 hover:bg-medical-100
-                             text-medical-700 px-3 py-1.5 rounded-lg transition-all"
+                  disabled={loading}
+                  className="whitespace-nowrap text-[10px] font-black bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/10
+                             hover:border-brand-blue/40 hover:bg-brand-blue/5 dark:hover:bg-brand-blue/10
+                             text-slate-600 dark:text-slate-400 hover:text-brand-blue transition-all px-4 py-2.5 rounded-xl uppercase tracking-widest"
                 >
                   {q}
                 </button>
               ))}
             </div>
-          )}
+          </div>
 
-          <div className="flex gap-3">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              placeholder="Query safety signals, disproportionality data, or interactions..."
-              disabled={loading}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl
-                         px-5 py-3 text-slate-800 placeholder-slate-400 text-sm
-                         focus:outline-none focus:border-medical-500 focus:bg-white
-                         disabled:opacity-50 transition-all font-medium"
-            />
+          <div className="flex gap-4 items-center">
+            <div className="flex-1 relative group">
+               <Terminal className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-brand-blue transition-colors" />
+               <input
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                placeholder="EXECUTE CLINICAL QUERY OR SIGNAL ANALYSIS..."
+                disabled={loading}
+                className="w-full bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl
+                           pl-16 pr-6 py-5 text-slate-900 dark:text-white placeholder:text-slate-400 text-xs font-black
+                           focus:outline-none focus:border-brand-blue/50 focus:bg-white dark:focus:bg-white/10
+                           disabled:opacity-50 transition-all uppercase tracking-widest"
+              />
+            </div>
             <button
               onClick={() => sendMessage()}
               disabled={loading || !input.trim()}
-              className="bg-medical-500 hover:bg-medical-600 disabled:opacity-50
-                         text-white p-3 rounded-xl transition-all shadow-lg shadow-medical-500/20 active:scale-95"
+              className="bg-brand-blue hover:bg-brand-blue/90 disabled:opacity-50
+                         text-white w-16 h-16 rounded-2xl flex items-center justify-center transition-all shadow-xl shadow-brand-blue/20 active:scale-95 group"
             >
               {loading
-                ? <Loader2 className="w-5 h-5 animate-spin" />
-                : <Send className="w-5 h-5" />
+                ? <Loader2 className="w-6 h-6 animate-spin" />
+                : <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
               }
             </button>
+          </div>
+          
+          <div className="flex items-center justify-between mt-6 px-4">
+             <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 opacity-50">
+                   <History className="w-3.5 h-3.5" />
+                   <span className="text-[9px] font-black uppercase tracking-widest">History Log Active</span>
+                </div>
+                <div className="flex items-center gap-2 opacity-50">
+                   <Activity className="w-3.5 h-3.5" />
+                   <span className="text-[9px] font-black uppercase tracking-widest">Neural Link SECURE</span>
+                </div>
+             </div>
+             <div className="flex items-center gap-2 text-slate-400">
+                <Info className="w-3 h-3" />
+                <span className="text-[8px] font-black uppercase tracking-widest">Clinical Decision Support Node</span>
+             </div>
           </div>
         </div>
 

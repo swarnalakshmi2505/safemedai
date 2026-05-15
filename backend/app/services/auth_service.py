@@ -18,7 +18,7 @@ pwd_context = CryptContext(
 
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-EXPIRE_MINS = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+EXPIRE_MINS = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 480))
 
 
 def hash_password(password: str) -> str:

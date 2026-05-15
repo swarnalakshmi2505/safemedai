@@ -42,6 +42,16 @@ export function AuthProvider({ children }) {
     setUser(prev => ({ ...prev, ...data }));
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await getCurrentUser();
+      setUser(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to refresh user context:", error);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('token');
@@ -51,7 +61,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

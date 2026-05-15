@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
-from app.services.alert_service import generate_alerts, get_all_alerts, review_alert, send_alert
+from app.services.alert_service import generate_alerts, get_all_alerts, review_alert, send_alert, monitor_alert
 from app.routers.auth import get_current_user, require_officer
 from app.models.user import User
 
@@ -43,6 +43,7 @@ def fetch_alerts(db: Session = Depends(get_db), current_user: User = Depends(get
             "message": a.message,
             "is_reviewed": a.is_reviewed,
             "is_sent": a.is_sent,
+            "is_monitored": a.is_monitored,
             "created_at": str(a.created_at)
         }
         for a in alerts
@@ -58,6 +59,13 @@ def mark_reviewed(alert_id: int, db: Session = Depends(get_db), _: User = Depend
 @router.patch("/{alert_id}/send")
 def mark_sent(alert_id: int, db: Session = Depends(get_db), _: User = Depends(require_officer)):
     result = send_alert(alert_id, db)
+    if not result:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return {"success": True, "alert_id": alert_id}
+
+@router.patch("/{alert_id}/monitor")
+def mark_monitored(alert_id: int, db: Session = Depends(get_db), _: User = Depends(require_officer)):
+    result = monitor_alert(alert_id, db)
     if not result:
         raise HTTPException(status_code=404, detail="Alert not found")
     return {"success": True, "alert_id": alert_id}

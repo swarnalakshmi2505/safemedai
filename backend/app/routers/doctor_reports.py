@@ -9,6 +9,7 @@ from sqlalchemy import desc
 
 from app.database.connection import get_db
 from app.models.doctor_report import DoctorReport
+from app.models.alert import Alert
 from app.models.user import User, UserRole
 from app.schemas.doctor_report import DoctorReportCreate, DoctorReportOut
 from app.routers.auth import get_current_user, require_officer, require_doctor
@@ -134,6 +135,11 @@ def get_report(
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
     
+    # Security check: Doctors can only see their own reports OR reviewed reports
+    if current_user.role == UserRole.doctor:
+        if report.doctor_id != current_user.id and report.status != "reviewed":
+            raise HTTPException(status_code=403, detail="Access denied to this clinical node")
+    
     if report.doctor:
         report.doctor_name = report.doctor.full_name
         
@@ -143,10 +149,14 @@ def get_report(
 def get_all_reports(
     status: str = None,
     db: Session = Depends(get_db),
-    _: User = Depends(require_officer)
+    current_user: User = Depends(get_current_user)
 ):
     query = db.query(DoctorReport)
-    if status:
+    
+    # Security: Doctors only see verified/reviewed reports from the global pool
+    if current_user.role == UserRole.doctor:
+        query = query.filter(DoctorReport.status == "reviewed")
+    elif status:
         query = query.filter(DoctorReport.status == status)
     
     reports = query.order_by(desc(DoctorReport.created_at)).all()
@@ -168,6 +178,28 @@ def review_report(
         raise HTTPException(status_code=404, detail="Report not found")
     
     report.status = "reviewed"
+    
+    # Create an official Alert from this verified report
+    severity_map = {
+        "life-threatening": "critical",
+        "severe": "high",
+        "moderate": "medium",
+        "mild": "medium"
+    }
+    
+    level = severity_map.get(report.severity.lower(), "medium")
+    risk_score = 90 if level == "critical" else 75 if level == "high" else 50
+    
+    new_alert = Alert(
+        drug_name=report.drug_name,
+        level=level,
+        risk_score=risk_score,
+        message=f"VERIFIED CLINICAL REPORT: {report.symptoms[:100]}...",
+        is_reviewed=True,
+        is_sent=True,
+        is_monitored=True
+    )
+    db.add(new_alert)
     db.commit()
     db.refresh(report)
     

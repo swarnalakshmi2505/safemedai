@@ -7,8 +7,11 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const queryParams = new URLSearchParams(location.search)
+  const isExpired = queryParams.get('expired') === 'true'
+
   const [form, setForm] = useState({ email: '', password: '' })
-  const [error, setError] = useState('')
+  const [error, setError] = useState(isExpired ? 'Identity node session expired. Please re-authenticate.' : '')
   const [success, setSuccess] = useState(location.state?.message || '')
   const [loading, setLoading] = useState(false)
 

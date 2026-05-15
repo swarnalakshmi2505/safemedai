@@ -22,6 +22,7 @@ export default {
           amber: '#F59E0B',
           red: '#EF4444',
           emerald: '#10B981',
+          teal: '#14B8A6',
         },
         surface: {
           50: '#F8FAFC',
@@ -48,6 +49,7 @@ export default {
         'glow-cyan': '0 0 20px rgba(56, 189, 248, 0.2)',
         'glow-red': '0 0 20px rgba(239, 68, 68, 0.2)',
         'glow-amber': '0 0 20px rgba(245, 158, 11, 0.2)',
+        'glow-teal': '0 0 20px rgba(20, 184, 166, 0.2)',
       },
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',

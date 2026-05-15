@@ -12,4 +12,5 @@ class Alert(Base):
     message = Column(String, nullable=False)
     is_reviewed = Column(Boolean, default=False)
     is_sent = Column(Boolean, default=False)
+    is_monitored = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

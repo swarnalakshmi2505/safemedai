@@ -1,82 +1,151 @@
-import React from 'react';
-import { FileText, Download, Filter, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  FileText, 
+  Search, 
+  Filter, 
+  ChevronRight, 
+  Database, 
+  ShieldAlert,
+  Activity,
+  ArrowRight,
+  TrendingUp,
+  Clock,
+  ExternalLink
+} from 'lucide-react';
 import Layout from '../components/Layout';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 
 export default function ReportsPage() {
-  const reports = [
-    { id: 'RP-2026-001', name: 'Quarterly Safety Signal Summary', date: '2026-05-10', type: 'Clinical', status: 'Ready' },
-    { id: 'RP-2026-002', name: 'Warfarin Disproportionality Analysis', date: '2026-05-08', type: 'PV Signal', status: 'Processing' },
-    { id: 'RP-2026-003', name: 'Demographic Risk Variance - Q2', date: '2026-05-05', type: 'Demographic', status: 'Ready' },
-    { id: 'RP-2026-004', name: 'FDA FAERS Ingestion Log', date: '2026-05-01', type: 'System', status: 'Ready' },
-  ];
+  const navigate = useNavigate();
+  const [drugs, setDrugs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const fetchDrugs = async () => {
+      try {
+        const res = await api.get('/drugs');
+        setDrugs(res.data);
+      } catch (err) {
+        console.error("Failed to fetch drugs:", err);
+        toast.error("Clinical node synchronization failure.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDrugs();
+  }, []);
+
+  const filteredDrugs = drugs.filter(d => 
+    d.drug_name.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <Layout title="Clinical Reports Archive">
-      <div className="max-w-6xl mx-auto space-y-8 animate-safemed-fadein">
+    <Layout title="Clinical Intelligence Archive">
+      <div className="max-w-7xl mx-auto space-y-10 pb-20 animate-safemed-fadein">
         
-        {/* Header */}
-        <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-medical-100 shadow-soft">
-          <div>
-            <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">Pharmacovigilance Reports</h1>
-            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1">Generated clinical intelligence and system logs</p>
+        {/* Intelligence Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-black/5 dark:border-white/5 pb-10">
+          <div className="flex items-center gap-6">
+            <div className="w-20 h-20 bg-brand-blue/10 border border-brand-blue/20 rounded-[2rem] flex items-center justify-center shadow-glow-blue/10">
+              <FileText className="w-10 h-10 text-brand-blue" />
+            </div>
+            <div>
+              <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter uppercase leading-none">
+                Report <span className="text-brand-blue">Generation</span> Matrix
+              </h1>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.3em] mt-4 flex items-center gap-2">
+                <Database className="w-4 h-4 text-brand-cyan" />
+                Select Clinical Compound for Deep-Dive Analysis
+              </p>
+            </div>
           </div>
-          <button className="bg-medical-500 hover:bg-medical-600 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg shadow-medical-500/20 active:scale-95 flex items-center gap-2">
-            <FileText className="w-4 h-4" /> Generate New Report
-          </button>
+          
+          <div className="relative group min-w-[320px]">
+            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-brand-blue transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Filter by Compound Name..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-slate-100 dark:bg-white/5 border border-black/5 dark:border-white/10 rounded-2xl px-14 py-5 text-sm font-black text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-brand-blue/50 transition-all uppercase tracking-widest"
+            />
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-4">
-          <div className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-3">
-            <Filter className="w-4 h-4 text-slate-400" />
-            <input type="text" placeholder="Filter reports by name or ID..." className="bg-transparent border-none focus:outline-none text-sm w-full font-medium" />
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-40 gap-6">
+            <div className="w-16 h-16 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Synchronizing Intelligence Nodes...</p>
           </div>
-          <div className="bg-white border border-slate-200 rounded-xl px-4 py-2 flex items-center gap-3">
-            <Calendar className="w-4 h-4 text-slate-400" />
-            <span className="text-sm font-medium text-slate-600">Last 30 Days</span>
-          </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDrugs.map((drug) => (
+              <div 
+                key={drug.drug_name}
+                onClick={() => navigate(`/officer/report/${drug.drug_name}`)}
+                className="clinical-card group cursor-pointer hover:border-brand-blue/40 hover:shadow-glow-blue/5 transition-all relative overflow-hidden"
+              >
+                {/* Visual Accent */}
+                <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none group-hover:scale-110 transition-transform">
+                   <ShieldAlert className="w-24 h-24 text-brand-blue" />
+                </div>
 
-        {/* Reports Table */}
-        <div className="safemed-card overflow-hidden !p-0">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100">
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Report ID</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Document Name</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Generation Date</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {reports.map((report) => (
-                <tr key={report.id} className="hover:bg-medical-50/30 transition-colors group">
-                  <td className="px-6 py-4 text-xs font-bold text-medical-600">{report.id}</td>
-                  <td className="px-6 py-4 text-sm font-extrabold text-slate-900">{report.name}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-500">{report.date}</td>
-                  <td className="px-6 py-4">
-                    <span className="text-[10px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md uppercase">
-                      {report.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${
-                      report.status === 'Ready' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600 animate-pulse'
-                    }`}>
-                      {report.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 hover:text-medical-600 transition-colors p-2 rounded-lg hover:bg-medical-50">
-                      <Download className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                <div className="flex justify-between items-start mb-6 border-b border-black/5 dark:border-white/5 pb-4">
+                   <div>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Compound Profile</span>
+                      <h3 className="text-2xl font-black text-slate-900 dark:text-white capitalize group-hover:text-brand-blue transition-colors">{drug.drug_name}</h3>
+                   </div>
+                   <div className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                      drug.risk_score > 70 ? 'bg-brand-red/10 border-brand-red/20 text-brand-red' : 'bg-brand-blue/10 border-brand-blue/20 text-brand-blue'
+                   }`}>
+                      Score: {drug.risk_score}
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                   <div className="space-y-1">
+                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Total Signals</p>
+                      <p className="text-sm font-black text-slate-700 dark:text-slate-300">{drug.total_reports?.toLocaleString()}</p>
+                   </div>
+                   <div className="space-y-1">
+                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Signal Nodes</p>
+                      <p className="text-sm font-black text-slate-700 dark:text-slate-300">{(drug.top_reactions || []).length} ADR Clusters</p>
+                   </div>
+                </div>
+
+                <button className="w-full btn-premium !py-4 flex items-center justify-center gap-3 group/btn">
+                   <FileText className="w-4 h-4 group-hover/btn:rotate-12 transition-transform" />
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em]">View Clinical Report</span>
+                   <ArrowRight className="w-4 h-4 translate-x-0 group-hover/btn:translate-x-2 transition-transform" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && filteredDrugs.length === 0 && (
+          <div className="text-center py-40 bg-slate-50 dark:bg-white/[0.01] border border-dashed border-black/10 dark:border-white/10 rounded-[3rem]">
+            <p className="text-slate-500 text-xs font-black uppercase tracking-widest">No matching compound signatures identified.</p>
+          </div>
+        )}
+
+        {/* Global Stats Footer */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-black/5 dark:border-white/5">
+           <div className="flex items-center gap-4 text-slate-400">
+              <TrendingUp className="w-5 h-5" />
+              <span className="text-[10px] font-black uppercase tracking-widest">{drugs.length} Total Monitored Compounds</span>
+           </div>
+           <div className="flex items-center gap-4 text-slate-400">
+              <Clock className="w-5 h-5" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Last Node Sync: Just Now</span>
+           </div>
+           <div className="flex items-center gap-4 text-slate-400">
+              <ExternalLink className="w-5 h-5" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Compliance Status: Validated</span>
+           </div>
         </div>
 
       </div>

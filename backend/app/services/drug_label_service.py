@@ -66,6 +66,8 @@ def fetch_drug_label_summary(drug_name: str) -> dict:
 
     uses = _clean_text(_first_text(result, "indications_and_usage", "purpose", "description"))
     benefits = _clean_text(_first_text(result, "clinical_studies", "indications_and_usage", "purpose"), 500)
+    contraindications = _clean_text(_first_text(result, "contraindications"), 500)
+    dosage = _clean_text(_first_text(result, "dosage_and_administration"), 500)
 
     boxed_warning = _clean_text(_first_text(result, "boxed_warning"), 500)
     warnings = _clean_text(_first_text(result, "warnings_and_cautions", "warnings"), 500)
@@ -86,6 +88,8 @@ def fetch_drug_label_summary(drug_name: str) -> dict:
         "uses": uses,
         "pros": [benefits],
         "cons": cons[:3],
+        "who_should_avoid": contraindications,
+        "dosage": dosage,
         "brand_names": openfda.get("brand_name", [])[:5],
         "generic_names": openfda.get("generic_name", [])[:5],
         "label_source": "openFDA Drug Label API",

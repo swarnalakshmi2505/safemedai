@@ -1,3 +1,9 @@
+import os
+import sys
+
+# Add the backend directory to the Python path so we can import the 'app' package
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+
 from app.database.connection import engine, Base
 # Import models to register them with Base
 from app.models.user import User, DownloadHistory
