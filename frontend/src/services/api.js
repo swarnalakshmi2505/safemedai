@@ -35,11 +35,6 @@ export const dataAPI = {
   getLeaderboard: () => analyticsAPI.getLeaderboard(),
 };
 
-export const doctorAPI = {
-  submitReport: (payload) => api.post('/doctor-reports/', payload),
-  getMyReports: () => api.get('/doctor-reports/me'),
-  getReportById: (id) => api.get(`/doctor-reports/${id}`),
-};
 
 export const alertsAPI = {
   getAlerts: () => api.get('/alerts/'),

@@ -1,27 +1,27 @@
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import OfficerDashboard from './pages/OfficerDashboard';
-import DrugSearchPage from './pages/DrugSearchPage';
-import DrugDetailPage from './pages/DrugDetailPage';
-import AlertsPage from './pages/AlertsPage';
-import InteractionPage from './pages/InteractionPage';
-import PersonalizedPage from './pages/PersonalizedPage';
-import LeaderboardPage from './pages/LeaderboardPage';
-import ChatbotPage from './pages/ChatbotPage';
-import ReportsPage from './pages/ReportsPage';
-import ReportPreviewPage from './pages/ReportPreviewPage';
-import SentimentPage from './pages/SentimentPage';
-import ProfilePage from './pages/ProfilePage';
+import LoginPage from './pages/LoginPage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
+import OfficerDashboard from './pages/OfficerDashboard.jsx';
+import DrugSearchPage from './pages/DrugSearchPage.jsx';
+import DrugDetailPage from './pages/DrugDetailPage.jsx';
+import AlertsPage from './pages/AlertsPage.jsx';
+import InteractionPage from './pages/InteractionPage.jsx';
+import PersonalizedPage from './pages/PersonalizedPage.jsx';
+import LeaderboardPage from './pages/LeaderboardPage.jsx';
+import ChatbotPage from './pages/ChatbotPage.jsx';
+import ReportsPage from './pages/ReportsPage.jsx';
+import ReportPreviewPage from './pages/ReportPreviewPage.jsx';
+import SentimentPage from './pages/SentimentPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 
 // Doctor Pages
-import DoctorDashboard from './pages/doctor/DoctorDashboard';
-import SubmitReportPage from './pages/doctor/SubmitReportPage';
-import MyReportsPage from './pages/doctor/MyReportsPage';
-import DoctorDrugSearch from './pages/doctor/DoctorDrugSearch';
-import DoctorChatbot from './pages/doctor/DoctorChatbot';
+import DoctorDashboard from './pages/doctor/DoctorDashboard.jsx';
+import SubmitReportPage from './pages/doctor/SubmitReportPage.jsx';
+import MyReportsPage from './pages/doctor/MyReportsPage.jsx';
+import DoctorDrugSearch from './pages/doctor/DoctorDrugSearch.jsx';
+import DoctorChatbot from './pages/doctor/DoctorChatbot.jsx';
 
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';

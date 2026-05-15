@@ -95,3 +95,15 @@ def verify_doctor(
 @router.get("/me", response_model=UserOut)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.patch("/profile", response_model=UserOut)
+def update_profile(
+    full_name: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    current_user.full_name = full_name
+    db.commit()
+    db.refresh(current_user)
+    return current_user

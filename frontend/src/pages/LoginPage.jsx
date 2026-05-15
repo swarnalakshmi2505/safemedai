@@ -47,32 +47,32 @@ export default function LoginPage() {
             <Shield className="w-10 h-10 text-brand-blue" />
           </div>
           <h1 className="text-4xl font-display font-bold text-white tracking-tighter mb-2">SafeMed<span className="text-brand-cyan">AI</span></h1>
-          <p className="text-[11px] text-enterprise-muted font-bold uppercase tracking-[0.3em]">Enterprise Intelligence Portal</p>
+          <p className="text-[11px] text-surface-500 font-bold uppercase tracking-[0.3em]">Enterprise Intelligence Portal</p>
         </div>
 
-        <div className="premium-card !p-8 backdrop-blur-xl bg-white/[0.03] border-white/10 shadow-2xl relative overflow-hidden">
+        <div className="clinical-card !p-8 backdrop-blur-xl bg-white/[0.03] border-white/10 shadow-2xl relative overflow-hidden">
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-enterprise-muted uppercase tracking-[0.2em] ml-1">Personnel Email</label>
+              <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] ml-1">Personnel Email</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-enterprise-muted group-focus-within:text-brand-cyan transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 group-focus-within:text-brand-cyan transition-colors" />
                 <input 
                   type="email" required placeholder="name@safemedai.com"
                   value={form.email} onChange={e => setForm(p => ({...p, email: e.target.value}))}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-12 py-3.5 text-sm font-medium text-white placeholder-enterprise-muted focus:outline-none focus:border-brand-blue/30 focus:bg-white/[0.05] transition-all" 
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-12 py-3.5 text-sm font-medium text-white placeholder-surface-600 focus:outline-none focus:border-brand-blue/30 focus:bg-white/[0.05] transition-all" 
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-enterprise-muted uppercase tracking-[0.2em] ml-1">Security Token</label>
+              <label className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] ml-1">Security Token</label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-enterprise-muted group-focus-within:text-brand-cyan transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 group-focus-within:text-brand-cyan transition-colors" />
                 <input 
                   type="password" required placeholder="••••••••"
                   value={form.password} onChange={e => setForm(p => ({...p, password: e.target.value}))}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-12 py-3.5 text-sm font-medium text-white placeholder-enterprise-muted focus:outline-none focus:border-brand-blue/30 focus:bg-white/[0.05] transition-all" 
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-12 py-3.5 text-sm font-medium text-white placeholder-surface-600 focus:outline-none focus:border-brand-blue/30 focus:bg-white/[0.05] transition-all" 
                 />
               </div>
             </div>

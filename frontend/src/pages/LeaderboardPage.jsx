@@ -15,7 +15,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
 } from 'recharts';
-import { ShieldAlert, BarChart as BarChartIcon, TrendingUp, Activity, ChevronRight, Cpu, Filter, ArrowDownWideZap, Database, AlertCircle, Shield } from 'lucide-react';
+import { ShieldAlert, BarChart as BarChartIcon, TrendingUp, Activity, ChevronRight, Cpu, Filter, ArrowDownNarrowWide, Database, AlertCircle, Shield } from 'lucide-react';
 
 import Layout from '../components/Layout';
 import StatCard from '../components/StatCard';
@@ -114,7 +114,7 @@ export default function LeaderboardPage() {
           <div className="xl:col-span-8 space-y-4">
             <div className="flex items-center justify-between px-2">
               <h2 className="text-[10px] font-black text-surface-500 uppercase tracking-[0.2em] flex items-center gap-2">
-                <ArrowDownWideZap className="w-4 h-4 text-brand-blue" />
+                <ArrowDownNarrowWide className="w-4 h-4 text-brand-blue" />
                 Intelligence Ranking Matrix
               </h2>
               <span className="text-[9px] font-bold text-surface-600 uppercase tracking-widest">Sort: Risk Priority</span>

@@ -32,17 +32,17 @@ export default function StatCard({ icon, label, value, sub, color, trend }) {
       
       <div className="text-2xl mb-2">{icon}</div>
       
-      <div className="text-2xl font-bold text-slate-900 tracking-tight">
+      <div className="text-3xl font-black text-white tracking-tight group-hover:text-brand-cyan transition-colors">
         {typeof value === 'number' ? num.toLocaleString() : value}
       </div>
       
-      <div className="text-xs font-medium text-slate-500 mt-0.5">{label}</div>
+      <div className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mt-1">{label}</div>
       
       {sub && (
-        <div className={`mt-2 text-[11px] flex items-center gap-1 font-semibold ${
-          trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-slate-400'
+        <div className={`mt-4 text-[10px] flex items-center gap-1.5 font-bold uppercase tracking-tight ${
+          trend === 'up' ? 'text-brand-emerald' : trend === 'down' ? 'text-brand-red' : 'text-surface-500'
         }`}>
-          <span>{trend === 'up' ? '↑' : trend === 'down' ? '↓' : '•'}</span>
+          <span className="p-1 rounded-md bg-white/5">{trend === 'up' ? '↑' : trend === 'down' ? '↓' : '•'}</span>
           {sub}
         </div>
       )}

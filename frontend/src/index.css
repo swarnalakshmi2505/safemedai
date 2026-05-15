@@ -5,31 +5,75 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg-primary: #0B1220;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --card-bg: rgba(15, 23, 42, 0.6);
+  }
+
+  .light {
+    --bg-primary: #F8FAFC;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --card-bg: rgba(255, 255, 255, 0.8);
+  }
+
   body {
-    @apply bg-brand-navy text-surface-200 antialiased selection:bg-brand-cyan/30 selection:text-white;
+    @apply antialiased transition-colors duration-300;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight text-white;
+    @apply font-display tracking-tight;
+    color: var(--text-primary);
   }
 }
 
 @layer components {
   .clinical-card {
-    @apply bg-clinical-card backdrop-blur-xl border border-clinical-border rounded-2xl p-6 shadow-premium hover:border-white/20 transition-all duration-300;
+    @apply backdrop-blur-xl border rounded-2xl p-6 transition-all duration-300;
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
+  }
+
+  .clinical-card:hover {
+    @apply border-brand-blue/30;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
   }
 
   .glass-button {
-    @apply bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-white/10 hover:border-white/20 active:scale-95 transition-all duration-200 backdrop-blur-md;
+    @apply flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-200 backdrop-blur-md;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+  }
+
+  .light .glass-button {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .glass-button:hover {
+    @apply bg-brand-blue/10 border-brand-blue/30 scale-105;
   }
 
   .sidebar-link {
     @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300;
+    color: var(--text-secondary);
+  }
+
+  .sidebar-link:hover {
+    @apply bg-brand-blue/5 text-brand-blue;
   }
 
   .sidebar-link-active {
-    @apply bg-brand-blue/10 text-brand-cyan border border-brand-blue/20 shadow-glow-blue/10;
+    @apply bg-brand-blue/10 text-brand-blue border border-brand-blue/20;
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.15);
   }
 
   .status-pulse {
@@ -38,7 +82,20 @@
   }
 
   .btn-premium {
-    @apply relative overflow-hidden bg-brand-blue hover:bg-brand-blue/90 text-white font-black text-xs uppercase tracking-[0.2em] px-8 py-4 rounded-xl shadow-glow-blue transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply relative overflow-hidden bg-brand-blue hover:bg-brand-blue/90 text-white font-black text-xs uppercase tracking-[0.2em] px-8 py-4 rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+  }
+
+  .premium-card {
+    @apply clinical-card;
+  }
+
+  .safemed-card {
+    @apply clinical-card;
+  }
+
+  .safemed-card-hover {
+    @apply hover:scale-[1.02];
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -52,8 +109,8 @@
   }
 }
 
-/* Glassmorphism Noise Overlay */
-body::before {
+/* Glassmorphism Noise Overlay - Only in dark mode */
+.dark body::before {
   content: "";
   position: fixed;
   top: 0;
